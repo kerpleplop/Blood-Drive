@@ -2,6 +2,10 @@ Over the years, the number of students involved in the student blood drive has b
 
 There will be a database on the back-end to store each time slot for signups. The web application will show all time slots, highlighting the specific spots that have been reserved. An admin will have the ability to add days and slots for future blood drives. The front-end will use React and Node.js to implement the interactive graphic as a student signs up. The graphic will show a large human heart, although not filled in. As a student signs up to donate blood, they will be brought to a new page, which will show the heart a bit more filled in. As more students sign up, the heart will fill until a goal is reached. The state of this heart will be stored on the server.
 
+The client and admin apps have been deployed on Heroku. 
+See a picture of the Admin side: TimeSlotAdmin.PNG
+The Client side can be found at: https://timeslotclient.herokuapp.com/
+
 Jesse Bloomster
 Daniel Ermer
 Josh Maguire
