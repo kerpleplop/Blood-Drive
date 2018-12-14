@@ -5,3 +5,8 @@ There will be a database on the back-end to store each time slot for signups. Th
 Jesse Bloomster
 Daniel Ermer
 Josh Maguire
+
+Client app: https://timeslotclient.herokuapp.com/
+
+Admin app: https://timeslotadmin.herokuapp.com/
+**admin app files located in ../projectadmin/

@@ -1,20 +1,23 @@
-/* Admin server for blood drive sign up. More info in readme.
- * connects to mondogb
+/* Server.js is a simple server for the Blood Drive Sign Up website.
  * 
+ * It is driven with a mongoDB database and computes simple functions
+ *  to get the data.
  */
- var fs = require('fs');
- var path = require('path');
- var express = require('express');
- var bodyParser = require('body-parser');
- var MongoClient = require('mongodb').MongoClient
- var app = express();
 
- app.set('port', (process.env.PORT || 3000));
- var APP_PATH = path.join(__dirname, 'dist');
+var fs = require('fs');
+var path = require('path');
+var express = require('express');
+var bodyParser = require('body-parser');
+var MongoClient = require('mongodb').MongoClient
+var app = express();
 
- app.use('/', express.static(APP_PATH));
- app.use(bodyParser.json());
- app.use(bodyParser.urlencoded({extended: true}));
+// set the port
+app.set('port', (process.env.PORT || 3000));
+var APP_PATH = path.join(__dirname, 'dist');
+
+app.use('/', express.static(APP_PATH));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
 
 // Connect to MongoDB
 var db;
@@ -36,26 +39,26 @@ app.use(function(req, res, next) {
     next();
 });
 
+// GET to get all time slots from database
 app.get('/api/timeslots', function(req, res) {
-	db.collection('timeslots').find({}).sort({"date": 1}).toArray(function(err, docs) {
+	db.collection('timeslots').find({}).toArray(function(err, docs) {
 		if (err) throw err;
 		res.json(docs);
 	});
 });
 
-//posting new timeslots
+//POST - creates new time slot, with data sent from client
 app.post('/api/timeslots', function(req, res) {
-	var newTimeSlot = {
-		id: Date.now(),
-		name: req.body.name,
-		email: req.body.email,
-		date: req.body.date,
-		time: req.body.time,
-		filled: false,
-	};
-	db.collection('timeslots').insertOne(newTimeSlot, function(err, result) {
+    var newTimeSlot = {
+        id: Date.now(),
+        name: req.body.name,
+        email: req.body.email,
+    };
+
+	// insert into database
+	db.collection('timeslots').insertOne(newComment, function(err, result) {
 		if (err) throw err;
-		db.collection('timeslots').find({}).sort({"date": 1}).toArray(function(err, docs) {
+		db.collection('timeslots').find({}).toArray(function(err, docs) {
 			if (err) throw err;
 			res.json(docs);
 		});
@@ -63,48 +66,61 @@ app.post('/api/timeslots', function(req, res) {
 
 });
 
+
+// GET - gets information regarding one timeslot, using the time slot ID number argument
 app.get('/api/timeslots/:id', function(req, res) {
-	db.collection("timeslots").find({"id": Number(req.params.id)}).toArray(function(err, docs) {
-		if (err) throw err;
-		res.json(docs);
-	});
+    db.collection("timeslots").find({"id": Number(req.params.id)}).toArray(function(err, docs) {
+        if (err) throw err;
+        res.json(docs);
+    });
 });
 
-//updating a timeslot
-app.put('/api/timeslots', function(req, res) {
-	var update = req.body;
 
-	db.collection('timeslots').updateOne(
-		{ id: update.id },
-		{ $set: {
+// PUT - updates one time slot, after a user has signed up for a time
+app.put('/api/timeslots', function(req, res) {
+    var update = req.body;
+
+	// update time slot
+    db.collection('timeslots').updateOne(
+        { id: update.id },
+        { $set: {
 			name: update.name,
 			email: update.email,
 			filled: true,
 		}},
-		function(err, result) {
-			if (err) throw err;
-			db.collection("timeslots").find({}).sort({"date": 1}).toArray(function(err, docs) {
-				if (err) throw err;
-				res.json(docs);
-			});
-		});
+        function(err, result) {
+            if (err) throw err;
+            db.collection("timeslots").find({}).toArray(function(err, docs) {
+                if (err) throw err;
+                res.json(docs);
+            });
+        });
 });
 
-app.delete('/api/timeslots/:id', function(req, res) {
-	db.collection("timeslots").deleteOne(
-		{'id': Number(req.params.id)},
-		function(err, result) {
-			if (err) throw err;
-			db.collection("timeslots").find({}).sort({"date": 1}).toArray(function(err, docs) {
-				if (err) throw err;
-				res.json(docs);
-			});
-		});
+
+// PUT - updates a time slot when user cancels their sign up
+app.put('/api/timeslots/cancel', function(req, res) {
+	var timeId = parseInt(req.body.id);
+	db.collection('timeslots').updateOne(
+		{ id: timeId },
+		{ $set: {
+			name: 'OPEN',
+			email: '',
+			filled: false,
+		}},
+        function(err, result) {
+            if (err) throw err;
+            db.collection("timeslots").find({}).toArray(function(err, docs) {
+                if (err) throw err;
+                res.json(docs);
+            });
+        });
 });
+
 
 // Send all routes/methods not specified above to the app root.
 app.use('*', express.static(APP_PATH));
 
 app.listen(app.get('port'), function() {
-	console.log('Server started: http://localhost:' + app.get('port') + '/');
+    console.log('Server started: http://localhost:' + app.get('port') + '/');
 });
